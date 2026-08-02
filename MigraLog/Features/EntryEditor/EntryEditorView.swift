@@ -25,6 +25,14 @@ struct EntryEditorView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    intensityPicker
+                } header: {
+                    Text("Intensitaet")
+                }
+
+                optionSection("Schmerzart", options: HeadacheOptions.painTypes, selection: $draft.painTypes)
+
                 Section("Beginn") {
                     Button {
                         let now = Date()
@@ -45,13 +53,6 @@ struct EntryEditorView: View {
                     }
                 }
 
-                Section {
-                    intensityPicker
-                } header: {
-                    Text("Intensitaet")
-                }
-
-                optionSection("Schmerzart", options: HeadacheOptions.painTypes, selection: $draft.painTypes)
                 optionSection("Symptome", options: HeadacheOptions.symptoms, selection: $draft.symptoms)
                 optionSection("Ausloeser", options: HeadacheOptions.triggers, selection: $draft.triggers)
                 optionSection("Lokalisation", options: HeadacheOptions.locations, selection: $draft.locations)
