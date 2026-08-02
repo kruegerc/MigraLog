@@ -11,7 +11,7 @@ struct EntriesListView: View {
             Group {
                 if entries.isEmpty {
                     ContentUnavailableView(
-                        "Noch keine Eintraege",
+                        "Noch keine Einträge",
                         systemImage: "waveform.path.ecg",
                         description: Text("Lege die erste Kopfschmerzepisode an.")
                     )
@@ -44,7 +44,7 @@ struct EntriesListView: View {
             Button {
                 isAddingEntry = true
             } label: {
-                Label("Eintrag hinzufuegen", systemImage: "plus.circle.fill")
+                Label("Eintrag hinzufügen", systemImage: "plus.circle.fill")
                     .font(.headline)
                     .frame(maxWidth: .infinity, minHeight: 54)
             }
