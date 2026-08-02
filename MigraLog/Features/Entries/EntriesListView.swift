@@ -32,7 +32,7 @@ struct EntriesListView: View {
             .safeAreaInset(edge: .bottom) {
                 addEntryBar
             }
-            .sheet(isPresented: $isAddingEntry) {
+            .fullScreenCover(isPresented: $isAddingEntry) {
                 EntryEditorView(mode: .new)
             }
         }
