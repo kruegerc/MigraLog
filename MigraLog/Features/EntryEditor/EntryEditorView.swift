@@ -37,7 +37,7 @@ struct EntryEditorView: View {
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 14)
-                .padding(.bottom, 96)
+                .padding(.bottom, 110)
             }
             .background(Color(.systemGroupedBackground))
             .scrollDismissesKeyboard(.interactively)
@@ -182,7 +182,7 @@ struct EntryEditorView: View {
             Text(title)
                 .font(.headline)
 
-            FlowLayout(spacing: 8) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 132), spacing: 8)], alignment: .leading, spacing: 8) {
                 ForEach(Array(options.enumerated()), id: \.offset) { _, option in
                     let isSelected = selection.wrappedValue.contains(option)
                     Button {
@@ -193,10 +193,12 @@ struct EntryEditorView: View {
                                 Image(systemName: "checkmark.circle.fill")
                             }
                             Text(option)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.82)
                         }
                         .font(.subheadline.weight(.semibold))
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 11)
+                        .frame(maxWidth: .infinity, minHeight: 46)
+                        .padding(.horizontal, 10)
                         .foregroundColor(isSelected ? Color.white : Color.primary)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
@@ -264,49 +266,6 @@ struct EntryEditorView: View {
             entry.apply(draft)
         }
         dismiss()
-    }
-}
-
-private struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let maxWidth = proposal.width ?? 320
-        var currentX: CGFloat = 0
-        var currentY: CGFloat = 0
-        var rowHeight: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if currentX > 0 && currentX + size.width > maxWidth {
-                currentX = 0
-                currentY += rowHeight + spacing
-                rowHeight = 0
-            }
-            currentX += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-
-        return CGSize(width: maxWidth, height: currentY + rowHeight)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var currentX = bounds.minX
-        var currentY = bounds.minY
-        var rowHeight: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if currentX > bounds.minX && currentX + size.width > bounds.maxX {
-                currentX = bounds.minX
-                currentY += rowHeight + spacing
-                rowHeight = 0
-            }
-
-            subview.place(at: CGPoint(x: currentX, y: currentY), proposal: ProposedViewSize(size))
-            currentX += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
     }
 }
 
