@@ -6,15 +6,30 @@ Diese Anleitung beschreibt die Installation direkt aus Xcode auf ein echtes iPho
 
 - Mac mit Xcode
 - iPhone mit iOS 17 oder neuer
+- iPhone 16 wird unterstützt und ist als bevorzugtes Testgerät für Version 1.0 vorgesehen
 - USB-Kabel oder eingerichtetes Wireless Debugging
 - Apple-ID in Xcode angemeldet
 - aktueller Stand des Branches `main`
+
+## Warum iPhone 16 unterstützt wird
+
+MigraLog ist als iPhone- und iPad-App konfiguriert. Das Projekt schließt keine iPhone-Generation aus.
+
+Relevante Projektwerte:
+
+- `TARGETED_DEVICE_FAMILY = 1,2`, also iPhone und iPad
+- `SUPPORTED_PLATFORMS = iphoneos iphonesimulator`
+- `IPHONEOS_DEPLOYMENT_TARGET = 17.0`
+- keine Einschränkung auf ältere Displaygrößen
+- keine Geräte-spezifischen Frameworks oder Hardware-Abhängigkeiten
+
+Ein iPhone 16 erfüllt diese Voraussetzungen. Für den Patiententest sollte trotzdem auf genau dem vorgesehenen iPhone 16 installiert und der Smoke Test durchgeführt werden.
 
 ## Vorbereitung in Xcode
 
 1. `MigraLog.xcodeproj` öffnen.
 2. Links oben das Scheme `MigraLog` auswählen.
-3. Als Zielgerät das angeschlossene iPhone auswählen.
+3. Als Zielgerät das angeschlossene iPhone 16 auswählen.
 4. In der Projektansicht `MigraLog` öffnen.
 5. Target `MigraLog` auswählen.
 6. Bereich `Signing & Capabilities` öffnen.
@@ -25,7 +40,7 @@ Diese Anleitung beschreibt die Installation direkt aus Xcode auf ein echtes iPho
 
 ## Installation
 
-1. iPhone entsperren.
+1. iPhone 16 entsperren.
 2. Falls abgefragt: diesem Computer vertrauen.
 3. In Xcode `Run` drücken.
 4. Warten, bis MigraLog auf dem iPhone startet.
