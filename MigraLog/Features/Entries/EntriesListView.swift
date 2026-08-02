@@ -5,24 +5,26 @@ struct EntriesListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \HeadacheEntry.startedAt, order: .reverse) private var entries: [HeadacheEntry]
     @State private var isAddingEntry = false
+    @State private var entryToEdit: HeadacheEntry?
 
     var body: some View {
         NavigationStack {
             Group {
                 if entries.isEmpty {
                     ContentUnavailableView(
-                        "Noch keine Eintraege",
+                        "Noch keine Einträge",
                         systemImage: "waveform.path.ecg",
                         description: Text("Lege die erste Kopfschmerzepisode an.")
                     )
                 } else {
                     List {
                         ForEach(entries) { entry in
-                            NavigationLink {
-                                EntryDetailView(entry: entry)
+                            Button {
+                                entryToEdit = entry
                             } label: {
                                 EntryRowView(entry: entry)
                             }
+                            .buttonStyle(.plain)
                         }
                         .onDelete(perform: deleteEntries)
                     }
@@ -35,6 +37,9 @@ struct EntriesListView: View {
             .fullScreenCover(isPresented: $isAddingEntry) {
                 EntryEditorView(mode: .new)
             }
+            .fullScreenCover(item: $entryToEdit) { entry in
+                EntryEditorView(mode: .edit(entry))
+            }
         }
     }
 
@@ -44,7 +49,7 @@ struct EntriesListView: View {
             Button {
                 isAddingEntry = true
             } label: {
-                Label("Eintrag hinzufuegen", systemImage: "plus.circle.fill")
+                Label("Eintrag hinzufügen", systemImage: "plus.circle.fill")
                     .font(.headline)
                     .frame(maxWidth: .infinity, minHeight: 54)
             }
