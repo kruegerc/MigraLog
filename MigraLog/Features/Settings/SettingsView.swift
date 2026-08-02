@@ -177,6 +177,21 @@ struct SettingsView: View {
                 return ceil(rect.height) + 8
             }
 
+            func drawTableHeader() {
+                var x = margin
+                let rowHeight: CGFloat = 24
+                UIColor.systemGray5.setFill()
+                UIBezierPath(rect: CGRect(x: margin, y: y, width: tableWidth, height: rowHeight)).fill()
+                for column in columns {
+                    let rect = CGRect(x: x, y: y, width: column.width, height: rowHeight)
+                    UIColor.systemGray3.setStroke()
+                    UIBezierPath(rect: rect).stroke()
+                    drawText(column.title, in: rect, font: headerFont)
+                    x += column.width
+                }
+                y += rowHeight
+            }
+
             func drawHeader() {
                 context.beginPage()
                 y = margin
@@ -198,21 +213,6 @@ struct SettingsView: View {
                 drawTableHeader()
             }
 
-            func drawTableHeader() {
-                var x = margin
-                let rowHeight: CGFloat = 24
-                UIColor.systemGray5.setFill()
-                UIBezierPath(rect: CGRect(x: margin, y: y, width: tableWidth, height: rowHeight)).fill()
-                for column in columns {
-                    let rect = CGRect(x: x, y: y, width: column.width, height: rowHeight)
-                    UIColor.systemGray3.setStroke()
-                    UIBezierPath(rect: rect).stroke()
-                    drawText(column.title, in: rect, font: headerFont)
-                    x += column.width
-                }
-                y += rowHeight
-            }
-
             func beginPageIfNeeded(rowHeight: CGFloat) {
                 if y + rowHeight > pageRect.height - margin {
                     drawHeader()
@@ -220,8 +220,8 @@ struct SettingsView: View {
             }
 
             func drawRow(_ values: [String], rowIndex: Int) {
-                let rowHeight = max(28, zip(values, columns).map { value, column in
-                    textHeight(value, width: column.width, font: bodyFont)
+                let rowHeight = max(28, zip(values, columns).map { pair in
+                    textHeight(pair.0, width: pair.1.width, font: bodyFont)
                 }.max() ?? 28)
                 beginPageIfNeeded(rowHeight: rowHeight)
 
