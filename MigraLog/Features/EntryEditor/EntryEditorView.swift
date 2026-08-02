@@ -93,11 +93,11 @@ struct EntryEditorView: View {
                 Spacer()
                 Text("\(draft.intensity)/10")
                     .font(.title3.weight(.semibold))
-                    .foregroundStyle(intensityColor(draft.intensity))
+                    .foregroundColor(intensityColor(draft.intensity))
             }
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 6), spacing: 8) {
-                ForEach(0...10, id: \.self) { value in
+                ForEach(Array(0...10), id: \.self) { value in
                     Button {
                         draft.intensity = value
                     } label: {
@@ -108,7 +108,7 @@ struct EntryEditorView: View {
                                 .font(.headline)
                         }
                         .frame(maxWidth: .infinity, minHeight: 58)
-                        .foregroundStyle(draft.intensity == value ? .white : intensityColor(value))
+                        .foregroundColor(draft.intensity == value ? Color.white : intensityColor(value))
                         .background(
                             RoundedRectangle(cornerRadius: 8)
                                 .fill(draft.intensity == value ? intensityColor(value) : intensityColor(value).opacity(0.12))
@@ -197,7 +197,7 @@ struct EntryEditorView: View {
                         .font(.subheadline.weight(.semibold))
                         .padding(.horizontal, 14)
                         .padding(.vertical, 11)
-                        .foregroundStyle(isSelected ? .white : .primary)
+                        .foregroundColor(isSelected ? Color.white : Color.primary)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
                                 .fill(isSelected ? Color.accentColor : Color(.tertiarySystemGroupedBackground))
