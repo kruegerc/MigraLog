@@ -120,21 +120,32 @@ struct SettingsView: View {
     }
 
     private func makePDF(entries: [HeadacheEntry]) -> Data {
-        let pageRect = CGRect(x: 0, y: 0, width: 595, height: 842)
-        let margin: CGFloat = 44
+        let pageRect = CGRect(x: 0, y: 0, width: 842, height: 595)
+        let margin: CGFloat = 28
         let renderer = UIGraphicsPDFRenderer(bounds: pageRect)
+        let tableWidth = pageRect.width - (2 * margin)
+        let columns: [(title: String, width: CGFloat)] = [
+            ("Beginn", 74),
+            ("Ende", 66),
+            ("Dauer", 48),
+            ("Int.", 32),
+            ("Art", 82),
+            ("Ort", 68),
+            ("Symptome", 96),
+            ("Auslöser", 88),
+            ("Medikamente", 90),
+            ("Wirkung", 76),
+            ("Notiz", tableWidth - 720)
+        ]
 
         return renderer.pdfData { context in
             var y = margin
+            let titleFont = UIFont.boldSystemFont(ofSize: 18)
+            let bodyFont = UIFont.systemFont(ofSize: 8)
+            let headerFont = UIFont.boldSystemFont(ofSize: 8)
+            let summaryFont = UIFont.systemFont(ofSize: 10)
 
-            func beginPageIfNeeded(requiredHeight: CGFloat) {
-                if y + requiredHeight > pageRect.height - margin {
-                    context.beginPage()
-                    y = margin
-                }
-            }
-
-            func draw(_ text: String, font: UIFont, color: UIColor = .label, spacing: CGFloat = 8) {
+            func drawText(_ text: String, in rect: CGRect, font: UIFont, color: UIColor = .label) {
                 let paragraph = NSMutableParagraphStyle()
                 paragraph.lineBreakMode = .byWordWrapping
                 let attributes: [NSAttributedString.Key: Any] = [
@@ -142,54 +153,115 @@ struct SettingsView: View {
                     .foregroundColor: color,
                     .paragraphStyle: paragraph
                 ]
-                let width = pageRect.width - (2 * margin)
-                let rect = NSString(string: text).boundingRect(
-                    with: CGSize(width: width, height: .greatestFiniteMagnitude),
-                    options: [.usesLineFragmentOrigin, .usesFontLeading],
-                    attributes: attributes,
-                    context: nil
-                )
-                beginPageIfNeeded(requiredHeight: ceil(rect.height) + spacing)
                 NSString(string: text).draw(
-                    with: CGRect(x: margin, y: y, width: width, height: ceil(rect.height) + 4),
+                    with: rect.insetBy(dx: 3, dy: 3),
                     options: [.usesLineFragmentOrigin, .usesFontLeading],
                     attributes: attributes,
                     context: nil
                 )
-                y += ceil(rect.height) + spacing
             }
 
-            func drawEntry(_ entry: HeadacheEntry, index: Int) {
-                beginPageIfNeeded(requiredHeight: 170)
-                draw("\(index). \(MigraFormat.dateTime.string(from: entry.startedAt))", font: .boldSystemFont(ofSize: 15), spacing: 6)
-                draw("Intensität: \(entry.intensity)/10 | Dauer: \(MigraFormat.duration(entry.duration))", font: .systemFont(ofSize: 12), spacing: 4)
-                draw("Ende: \(entry.endedAt.map { MigraFormat.dateTime.string(from: $0) } ?? "Offen")", font: .systemFont(ofSize: 12), spacing: 4)
-                draw("Schmerzart: \(listText(entry.painTypes))", font: .systemFont(ofSize: 12), spacing: 4)
-                draw("Lokalisation: \(listText(entry.locations))", font: .systemFont(ofSize: 12), spacing: 4)
-                draw("Symptome: \(listText(entry.symptoms))", font: .systemFont(ofSize: 12), spacing: 4)
-                draw("Auslöser: \(listText(entry.triggers))", font: .systemFont(ofSize: 12), spacing: 4)
-                draw("Medikamente: \(entry.medicationsText.isEmpty ? "Nicht erfasst" : entry.medicationsText)", font: .systemFont(ofSize: 12), spacing: 4)
-                draw("Wirkung: \(entry.medicationEffect.title)", font: .systemFont(ofSize: 12), spacing: 4)
-                if !entry.notes.isEmpty {
-                    draw("Notiz: \(entry.notes)", font: .systemFont(ofSize: 12), spacing: 4)
+            func textHeight(_ text: String, width: CGFloat, font: UIFont) -> CGFloat {
+                let paragraph = NSMutableParagraphStyle()
+                paragraph.lineBreakMode = .byWordWrapping
+                let attributes: [NSAttributedString.Key: Any] = [
+                    .font: font,
+                    .paragraphStyle: paragraph
+                ]
+                let rect = NSString(string: text).boundingRect(
+                    with: CGSize(width: width - 6, height: .greatestFiniteMagnitude),
+                    options: [.usesLineFragmentOrigin, .usesFontLeading],
+                    attributes: attributes,
+                    context: nil
+                )
+                return ceil(rect.height) + 8
+            }
+
+            func drawHeader() {
+                context.beginPage()
+                y = margin
+                drawText("MigraLog Arztbericht", in: CGRect(x: margin, y: y, width: tableWidth, height: 24), font: titleFont)
+                y += 27
+                drawText(
+                    "Erstellt am \(MigraFormat.dateTime.string(from: Date())) | Einträge: \(entries.count) | Ø Intensität: \(averageIntensity(entries)) | Ø Dauer: \(averageDuration(entries))",
+                    in: CGRect(x: margin, y: y, width: tableWidth, height: 18),
+                    font: summaryFont,
+                    color: .secondaryLabel
+                )
+                y += 25
+                drawText(
+                    "Hinweis: Dieser Bericht fasst lokal gespeicherte Kopfschmerzepisoden zusammen und ersetzt keine medizinische Diagnose oder Behandlung.",
+                    in: CGRect(x: margin, y: y, width: tableWidth, height: 30),
+                    font: summaryFont
+                )
+                y += 37
+                drawTableHeader()
+            }
+
+            func drawTableHeader() {
+                var x = margin
+                let rowHeight: CGFloat = 24
+                UIColor.systemGray5.setFill()
+                UIBezierPath(rect: CGRect(x: margin, y: y, width: tableWidth, height: rowHeight)).fill()
+                for column in columns {
+                    let rect = CGRect(x: x, y: y, width: column.width, height: rowHeight)
+                    UIColor.systemGray3.setStroke()
+                    UIBezierPath(rect: rect).stroke()
+                    drawText(column.title, in: rect, font: headerFont)
+                    x += column.width
                 }
-                y += 8
+                y += rowHeight
             }
 
-            context.beginPage()
-            draw("MigraLog Arztbericht", font: .boldSystemFont(ofSize: 24), spacing: 10)
-            draw("Erstellt am \(MigraFormat.dateTime.string(from: Date()))", font: .systemFont(ofSize: 12), color: .secondaryLabel, spacing: 14)
-            draw("Dieser Bericht fasst die lokal gespeicherten Kopfschmerz- und Migräneepisoden zusammen. MigraLog ersetzt keine medizinische Diagnose oder Behandlung.", font: .systemFont(ofSize: 12), spacing: 14)
-            draw("Übersicht", font: .boldSystemFont(ofSize: 17), spacing: 8)
-            draw("Einträge: \(entries.count)", font: .systemFont(ofSize: 12), spacing: 4)
-            draw("Durchschnittliche Intensität: \(averageIntensity(entries))", font: .systemFont(ofSize: 12), spacing: 4)
-            draw("Durchschnittliche Dauer: \(averageDuration(entries))", font: .systemFont(ofSize: 12), spacing: 14)
-            draw("Einträge", font: .boldSystemFont(ofSize: 17), spacing: 8)
+            func beginPageIfNeeded(rowHeight: CGFloat) {
+                if y + rowHeight > pageRect.height - margin {
+                    drawHeader()
+                }
+            }
 
+            func drawRow(_ values: [String], rowIndex: Int) {
+                let rowHeight = max(28, zip(values, columns).map { value, column in
+                    textHeight(value, width: column.width, font: bodyFont)
+                }.max() ?? 28)
+                beginPageIfNeeded(rowHeight: rowHeight)
+
+                var x = margin
+                if rowIndex.isMultiple(of: 2) {
+                    UIColor.systemGray6.setFill()
+                    UIBezierPath(rect: CGRect(x: margin, y: y, width: tableWidth, height: rowHeight)).fill()
+                }
+
+                for (value, column) in zip(values, columns) {
+                    let rect = CGRect(x: x, y: y, width: column.width, height: rowHeight)
+                    UIColor.systemGray4.setStroke()
+                    UIBezierPath(rect: rect).stroke()
+                    drawText(value, in: rect, font: bodyFont)
+                    x += column.width
+                }
+                y += rowHeight
+            }
+
+            drawHeader()
             for (index, entry) in entries.enumerated() {
-                drawEntry(entry, index: index + 1)
+                drawRow(pdfRow(for: entry), rowIndex: index)
             }
         }
+    }
+
+    private func pdfRow(for entry: HeadacheEntry) -> [String] {
+        [
+            MigraFormat.dateTime.string(from: entry.startedAt),
+            entry.endedAt.map { MigraFormat.dateTime.string(from: $0) } ?? "Offen",
+            MigraFormat.duration(entry.duration),
+            "\(entry.intensity)/10",
+            listText(entry.painTypes),
+            listText(entry.locations),
+            listText(entry.symptoms),
+            listText(entry.triggers),
+            entry.medicationsText.isEmpty ? "Nicht erfasst" : entry.medicationsText,
+            entry.medicationEffect.title,
+            entry.notes
+        ]
     }
 
     private func makeCSV(entries: [HeadacheEntry]) -> String {
