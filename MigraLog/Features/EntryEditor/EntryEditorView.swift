@@ -9,6 +9,7 @@ enum EntryEditorMode {
 private enum EntryEditorPage: String, CaseIterable, Identifiable {
     case basis = "Basis"
     case details = "Details"
+    case scrollTest = "Scroll-Test"
 
     var id: String { rawValue }
 }
@@ -54,6 +55,8 @@ struct EntryEditorView: View {
                     basisContent
                 case .details:
                     detailsContent
+                case .scrollTest:
+                    scrollTestContent
                 }
             }
             .navigationTitle(navigationTitle)
@@ -64,9 +67,12 @@ struct EntryEditorView: View {
                         dismiss()
                     }
                 }
-            }
-            .safeAreaInset(edge: .bottom) {
-                saveBar
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Speichern") {
+                        save()
+                    }
+                    .disabled(!draft.isValid)
+                }
             }
         }
     }
@@ -110,6 +116,22 @@ struct EntryEditorView: View {
             Section("Notiz") {
                 TextField("Was ist wichtig?", text: $draft.notes, axis: .vertical)
                     .lineLimit(4...8)
+            }
+        }
+    }
+
+    private var scrollTestContent: some View {
+        Group {
+            Section("Scroll-Test") {
+                ForEach(1...30, id: \.self) { number in
+                    HStack {
+                        Text("Testzeile \(number)")
+                        Spacer()
+                        Image(systemName: "chevron.down")
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(minHeight: 44)
+                }
             }
         }
     }
@@ -250,24 +272,6 @@ struct EntryEditorView: View {
                 .frame(maxWidth: .infinity, minHeight: 42)
         }
         .buttonStyle(.bordered)
-    }
-
-    private var saveBar: some View {
-        VStack(spacing: 0) {
-            Divider()
-            Button {
-                save()
-            } label: {
-                Label("Speichern", systemImage: "checkmark.circle.fill")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, minHeight: 54)
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(!draft.isValid)
-            .padding(.horizontal, 18)
-            .padding(.vertical, 12)
-        }
-        .background(.bar)
     }
 
     private func optionSection(_ title: String, options: [String], selection: Binding<[String]>) -> some View {
