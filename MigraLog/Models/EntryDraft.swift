@@ -9,7 +9,7 @@ struct EntryDraft {
     var locations: [String] = []
     var symptoms: [String] = []
     var triggers: [String] = []
-    var medications = ""
+    var medications = "Triptan 10 mg"
     var medicationEffect: MedicationEffect = .notRecorded
     var notes = ""
 
