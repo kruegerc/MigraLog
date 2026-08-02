@@ -16,7 +16,7 @@ struct MultiSelectList: View {
                         Spacer()
                         if selection.contains(option) {
                             Image(systemName: "checkmark")
-                                .foregroundStyle(.accent)
+                                .foregroundColor(.accentColor)
                         }
                     }
                 }
