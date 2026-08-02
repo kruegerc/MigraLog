@@ -120,22 +120,22 @@ struct SettingsView: View {
     }
 
     private func makePDF(entries: [HeadacheEntry]) -> Data {
-        let pageRect = CGRect(x: 0, y: 0, width: 842, height: 595)
+        let landscapeRect = CGRect(x: 0, y: 0, width: 842, height: 595)
+        let portraitRect = CGRect(x: 0, y: 0, width: 595, height: 842)
         let margin: CGFloat = 28
-        let renderer = UIGraphicsPDFRenderer(bounds: pageRect)
-        let tableWidth = pageRect.width - (2 * margin)
+        let renderer = UIGraphicsPDFRenderer(bounds: landscapeRect)
+        let tableWidth = landscapeRect.width - (2 * margin)
         let columns: [(title: String, width: CGFloat)] = [
-            ("Beginn", 74),
-            ("Ende", 66),
-            ("Dauer", 48),
-            ("Int.", 32),
-            ("Art", 82),
-            ("Ort", 68),
-            ("Symptome", 96),
-            ("Auslöser", 88),
-            ("Medikamente", 90),
-            ("Wirkung", 76),
-            ("Notiz", tableWidth - 720)
+            ("Nr.", 28),
+            ("Beginn", 86),
+            ("Ende", 78),
+            ("Dauer", 52),
+            ("Int.", 34),
+            ("Art", 112),
+            ("Ort", 88),
+            ("Symptome", 124),
+            ("Auslöser", 112),
+            ("Wirkung", tableWidth - 714)
         ]
 
         return renderer.pdfData { context in
@@ -144,6 +144,9 @@ struct SettingsView: View {
             let bodyFont = UIFont.systemFont(ofSize: 8)
             let headerFont = UIFont.boldSystemFont(ofSize: 8)
             let summaryFont = UIFont.systemFont(ofSize: 10)
+            let detailTitleFont = UIFont.boldSystemFont(ofSize: 15)
+            let detailBodyFont = UIFont.systemFont(ofSize: 11)
+            let detailLabelFont = UIFont.boldSystemFont(ofSize: 11)
 
             func drawText(_ text: String, in rect: CGRect, font: UIFont, color: UIColor = .label) {
                 let paragraph = NSMutableParagraphStyle()
@@ -177,7 +180,7 @@ struct SettingsView: View {
                 return ceil(rect.height) + 8
             }
 
-            func drawTableHeader() {
+            func drawSummaryTableHeader() {
                 var x = margin
                 let rowHeight: CGFloat = 24
                 UIColor.systemGray5.setFill()
@@ -192,8 +195,8 @@ struct SettingsView: View {
                 y += rowHeight
             }
 
-            func drawHeader() {
-                context.beginPage()
+            func drawSummaryHeader() {
+                context.beginPage(withBounds: landscapeRect, pageInfo: [:])
                 y = margin
                 drawText("MigraLog Arztbericht", in: CGRect(x: margin, y: y, width: tableWidth, height: 24), font: titleFont)
                 y += 27
@@ -205,25 +208,25 @@ struct SettingsView: View {
                 )
                 y += 25
                 drawText(
-                    "Hinweis: Dieser Bericht fasst lokal gespeicherte Kopfschmerzepisoden zusammen und ersetzt keine medizinische Diagnose oder Behandlung.",
+                    "Teil 1 zeigt eine kompakte Übersicht. Vollständige Detailangaben stehen im Anhang ab Seite 2.",
                     in: CGRect(x: margin, y: y, width: tableWidth, height: 30),
                     font: summaryFont
                 )
                 y += 37
-                drawTableHeader()
+                drawSummaryTableHeader()
             }
 
-            func beginPageIfNeeded(rowHeight: CGFloat) {
-                if y + rowHeight > pageRect.height - margin {
-                    drawHeader()
+            func beginSummaryPageIfNeeded(rowHeight: CGFloat) {
+                if y + rowHeight > landscapeRect.height - margin {
+                    drawSummaryHeader()
                 }
             }
 
-            func drawRow(_ values: [String], rowIndex: Int) {
+            func drawSummaryRow(_ values: [String], rowIndex: Int) {
                 let rowHeight = max(28, zip(values, columns).map { pair in
                     textHeight(pair.0, width: pair.1.width, font: bodyFont)
                 }.max() ?? 28)
-                beginPageIfNeeded(rowHeight: rowHeight)
+                beginSummaryPageIfNeeded(rowHeight: rowHeight)
 
                 var x = margin
                 if rowIndex.isMultiple(of: 2) {
@@ -241,15 +244,59 @@ struct SettingsView: View {
                 y += rowHeight
             }
 
-            drawHeader()
+            func drawDetailLine(label: String, value: String, pageWidth: CGFloat) {
+                let text = "\(label): \(value)"
+                let height = textHeight(text, width: pageWidth - (2 * margin), font: detailBodyFont)
+                if y + height > portraitRect.height - margin {
+                    context.beginPage(withBounds: portraitRect, pageInfo: [:])
+                    y = margin
+                }
+                drawText(label + ":", in: CGRect(x: margin, y: y, width: 110, height: height), font: detailLabelFont)
+                drawText(value, in: CGRect(x: margin + 112, y: y, width: pageWidth - (2 * margin) - 112, height: height), font: detailBodyFont)
+                y += height
+            }
+
+            func drawDetailEntry(_ entry: HeadacheEntry, index: Int) {
+                let pageWidth = portraitRect.width
+                if y + 190 > portraitRect.height - margin {
+                    context.beginPage(withBounds: portraitRect, pageInfo: [:])
+                    y = margin
+                }
+
+                drawText("Eintrag \(index)", in: CGRect(x: margin, y: y, width: pageWidth - (2 * margin), height: 24), font: detailTitleFont)
+                y += 28
+                drawDetailLine(label: "Beginn", value: MigraFormat.dateTime.string(from: entry.startedAt), pageWidth: pageWidth)
+                drawDetailLine(label: "Ende", value: entry.endedAt.map { MigraFormat.dateTime.string(from: $0) } ?? "Offen", pageWidth: pageWidth)
+                drawDetailLine(label: "Dauer", value: MigraFormat.duration(entry.duration), pageWidth: pageWidth)
+                drawDetailLine(label: "Intensität", value: "\(entry.intensity)/10", pageWidth: pageWidth)
+                drawDetailLine(label: "Schmerzart", value: listText(entry.painTypes), pageWidth: pageWidth)
+                drawDetailLine(label: "Lokalisation", value: listText(entry.locations), pageWidth: pageWidth)
+                drawDetailLine(label: "Symptome", value: listText(entry.symptoms), pageWidth: pageWidth)
+                drawDetailLine(label: "Auslöser", value: listText(entry.triggers), pageWidth: pageWidth)
+                drawDetailLine(label: "Medikamente", value: entry.medicationsText.isEmpty ? "Nicht erfasst" : entry.medicationsText, pageWidth: pageWidth)
+                drawDetailLine(label: "Wirkung", value: entry.medicationEffect.title, pageWidth: pageWidth)
+                drawDetailLine(label: "Notiz", value: entry.notes.isEmpty ? "Nicht erfasst" : entry.notes, pageWidth: pageWidth)
+                y += 12
+            }
+
+            drawSummaryHeader()
             for (index, entry) in entries.enumerated() {
-                drawRow(pdfRow(for: entry), rowIndex: index)
+                drawSummaryRow(summaryRow(for: entry, index: index + 1), rowIndex: index)
+            }
+
+            context.beginPage(withBounds: portraitRect, pageInfo: [:])
+            y = margin
+            drawText("Detailanhang", in: CGRect(x: margin, y: y, width: portraitRect.width - (2 * margin), height: 28), font: titleFont)
+            y += 34
+            for (index, entry) in entries.enumerated() {
+                drawDetailEntry(entry, index: index + 1)
             }
         }
     }
 
-    private func pdfRow(for entry: HeadacheEntry) -> [String] {
+    private func summaryRow(for entry: HeadacheEntry, index: Int) -> [String] {
         [
+            "\(index)",
             MigraFormat.dateTime.string(from: entry.startedAt),
             entry.endedAt.map { MigraFormat.dateTime.string(from: $0) } ?? "Offen",
             MigraFormat.duration(entry.duration),
@@ -258,9 +305,7 @@ struct SettingsView: View {
             listText(entry.locations),
             listText(entry.symptoms),
             listText(entry.triggers),
-            entry.medicationsText.isEmpty ? "Nicht erfasst" : entry.medicationsText,
-            entry.medicationEffect.title,
-            entry.notes
+            entry.medicationEffect.title
         ]
     }
 
