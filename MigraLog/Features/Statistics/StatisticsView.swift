@@ -7,15 +7,15 @@ struct StatisticsView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Uebersicht") {
-                    LabeledContent("Eintraege", value: "\(entries.count)")
-                    LabeledContent("Durchschnittliche Intensitaet", value: averageIntensity)
+                Section("Übersicht") {
+                    LabeledContent("Einträge", value: "\(entries.count)")
+                    LabeledContent("Durchschnittliche Intensität", value: averageIntensity)
                     LabeledContent("Durchschnittliche Dauer", value: averageDuration)
                 }
 
-                Section("Haeufige Angaben") {
+                Section("Häufige Angaben") {
                     LabeledContent("Symptome", value: mostFrequent(entries.flatMap(\.symptoms)))
-                    LabeledContent("Ausloeser", value: mostFrequent(entries.flatMap(\.triggers)))
+                    LabeledContent("Auslöser", value: mostFrequent(entries.flatMap(\.triggers)))
                     LabeledContent("Schmerzart", value: mostFrequent(entries.flatMap(\.painTypes)))
                 }
             }
