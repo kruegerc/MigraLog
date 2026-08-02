@@ -67,12 +67,9 @@ struct EntryEditorView: View {
                         dismiss()
                     }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Speichern") {
-                        save()
-                    }
-                    .disabled(!draft.isValid)
-                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                saveBar
             }
         }
     }
@@ -267,6 +264,24 @@ struct EntryEditorView: View {
         }
         .padding(.vertical, 4)
         .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+    }
+
+    private var saveBar: some View {
+        VStack(spacing: 0) {
+            Divider()
+            Button {
+                save()
+            } label: {
+                Label("Speichern", systemImage: "checkmark.circle.fill")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, minHeight: 54)
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(!draft.isValid)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 12)
+        }
+        .background(.bar)
     }
 
     private func optionSection(_ title: String, options: [String], selection: Binding<[String]>) -> some View {
