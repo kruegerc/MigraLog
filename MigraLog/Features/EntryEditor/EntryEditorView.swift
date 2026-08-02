@@ -319,7 +319,7 @@ struct EntryEditorView: View {
         draft.startedAt = date
         if !draft.hasEndedAt {
             draft.endedAt = date
-        } else if let endedAt = draft.endedAt, endedAt < draft.startedAt {
+        } else if draft.endedAt < draft.startedAt {
             draft.endedAt = draft.startedAt
         }
     }
