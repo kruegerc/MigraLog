@@ -148,7 +148,7 @@ struct EntryEditorView: View {
     }
 
     private var startDateControls: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 10) {
             Button {
                 let now = Date()
                 draft.startedAt = now
@@ -163,17 +163,17 @@ struct EntryEditorView: View {
             .buttonStyle(.bordered)
 
             DatePicker("Datum", selection: $draft.startedAt, displayedComponents: .date)
-                .datePickerStyle(.graphical)
+                .datePickerStyle(.compact)
 
             DatePicker("Uhrzeit", selection: $draft.startedAt, displayedComponents: .hourAndMinute)
-                .datePickerStyle(.wheel)
-                .frame(height: 110)
-                .clipped()
+                .datePickerStyle(.compact)
 
             Toggle("Ende erfassen", isOn: $draft.hasEndedAt)
 
             if draft.hasEndedAt {
-                DatePicker("Ende", selection: $draft.endedAt, in: draft.startedAt...)
+                DatePicker("Ende Datum", selection: $draft.endedAt, in: draft.startedAt..., displayedComponents: .date)
+                    .datePickerStyle(.compact)
+                DatePicker("Ende Uhrzeit", selection: $draft.endedAt, in: draft.startedAt..., displayedComponents: .hourAndMinute)
                     .datePickerStyle(.compact)
             }
         }
