@@ -10,15 +10,15 @@ struct SettingsView: View {
         NavigationStack {
             List {
                 Section("Datenschutz") {
-                    Text("Alle Daten werden lokal auf diesem Geraet gespeichert. MigraLog verwendet im MVP kein Benutzerkonto, keine Werbung und keine Analyse-SDKs.")
+                    Text("Alle Daten werden lokal auf diesem Gerät gespeichert. MigraLog verwendet im MVP kein Benutzerkonto, keine Werbung und keine Analyse-SDKs.")
                 }
 
                 Section("Medizinischer Hinweis") {
-                    Text("MigraLog ersetzt keine Diagnose oder Behandlung. Bei starken, neuen oder ungewoehnlichen Beschwerden sollte medizinischer Rat eingeholt werden.")
+                    Text("MigraLog ersetzt keine Diagnose oder Behandlung. Bei starken, neuen oder ungewöhnlichen Beschwerden sollte medizinischer Rat eingeholt werden.")
                 }
 
                 Section("Daten") {
-                    Button("Alle Eintraege loeschen", role: .destructive) {
+                    Button("Alle Einträge löschen", role: .destructive) {
                         showsDeleteConfirmation = true
                     }
                     .disabled(entries.isEmpty)
@@ -30,8 +30,8 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Einstellungen")
-            .confirmationDialog("Alle Eintraege loeschen?", isPresented: $showsDeleteConfirmation, titleVisibility: .visible) {
-                Button("Alle loeschen", role: .destructive) {
+            .confirmationDialog("Alle Einträge löschen?", isPresented: $showsDeleteConfirmation, titleVisibility: .visible) {
+                Button("Alle löschen", role: .destructive) {
                     for entry in entries {
                         modelContext.delete(entry)
                     }
