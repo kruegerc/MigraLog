@@ -7,8 +7,7 @@ struct MultiSelectList: View {
 
     var body: some View {
         Section(title) {
-            ForEach(options.indices, id: \.self) { index in
-                let option = options[index]
+            ForEach(Array(options.enumerated()), id: \.offset) { _, option in
                 Button {
                     toggle(option)
                 } label: {
