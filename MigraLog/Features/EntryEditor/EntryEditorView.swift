@@ -9,7 +9,6 @@ enum EntryEditorMode {
 private enum EntryEditorPage: String, CaseIterable, Identifiable {
     case basis = "Basis"
     case details = "Details"
-    case scrollTest = "Scroll-Test"
 
     var id: String { rawValue }
 }
@@ -55,8 +54,6 @@ struct EntryEditorView: View {
                     basisContent
                 case .details:
                     detailsContent
-                case .scrollTest:
-                    scrollTestContent
                 }
             }
             .navigationTitle(navigationTitle)
@@ -113,22 +110,6 @@ struct EntryEditorView: View {
             Section("Notiz") {
                 TextField("Was ist wichtig?", text: $draft.notes, axis: .vertical)
                     .lineLimit(4...8)
-            }
-        }
-    }
-
-    private var scrollTestContent: some View {
-        Group {
-            Section("Scroll-Test") {
-                ForEach(1...30, id: \.self) { number in
-                    HStack {
-                        Text("Testzeile \(number)")
-                        Spacer()
-                        Image(systemName: "chevron.down")
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(minHeight: 44)
-                }
             }
         }
     }
