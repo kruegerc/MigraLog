@@ -158,11 +158,7 @@ struct EntryEditorView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 12) {
                 Button {
-                    let now = Date()
-                    draft.startedAt = now
-                    if !draft.hasEndedAt {
-                        draft.endedAt = now
-                    }
+                    setStartToNow()
                 } label: {
                     Label("Jetzt", systemImage: "clock")
                         .font(.headline)
@@ -181,23 +177,47 @@ struct EntryEditorView: View {
                 Spacer(minLength: 0)
             }
 
-            DatePicker("Datum", selection: $draft.startedAt, displayedComponents: .date)
-                .datePickerStyle(.compact)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
+                startAdjustButton("-1 Tag", systemImage: "chevron.left") {
+                    adjustStart(.day, by: -1)
+                }
+                startAdjustButton("Heute", systemImage: "calendar") {
+                    setStartToTodayKeepingTime()
+                }
+                startAdjustButton("+1 Tag", systemImage: "chevron.right") {
+                    adjustStart(.day, by: 1)
+                }
 
-            DatePicker("Uhrzeit", selection: $draft.startedAt, displayedComponents: .hourAndMinute)
-                .datePickerStyle(.compact)
+                startAdjustButton("-1 h", systemImage: "minus") {
+                    adjustStart(.hour, by: -1)
+                }
+                startAdjustButton("-15 min", systemImage: "minus.circle") {
+                    adjustStart(.minute, by: -15)
+                }
+                startAdjustButton("+15 min", systemImage: "plus.circle") {
+                    adjustStart(.minute, by: 15)
+                }
+
+                startAdjustButton("+1 h", systemImage: "plus") {
+                    adjustStart(.hour, by: 1)
+                }
+            }
 
             Toggle("Ende erfassen", isOn: $draft.hasEndedAt)
-
-            if draft.hasEndedAt {
-                DatePicker("Ende Datum", selection: $draft.endedAt, in: draft.startedAt..., displayedComponents: .date)
-                    .datePickerStyle(.compact)
-                DatePicker("Ende Uhrzeit", selection: $draft.endedAt, in: draft.startedAt..., displayedComponents: .hourAndMinute)
-                    .datePickerStyle(.compact)
-            }
         }
         .padding(.vertical, 4)
         .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+    }
+
+    private func startAdjustButton(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.caption.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .frame(maxWidth: .infinity, minHeight: 42)
+        }
+        .buttonStyle(.bordered)
     }
 
     private var saveBar: some View {
@@ -266,6 +286,41 @@ struct EntryEditorView: View {
         case 3...5: "circle.lefthalf.filled"
         case 6...8: "flame.fill"
         default: "exclamationmark.triangle.fill"
+        }
+    }
+
+    private func setStartToNow() {
+        let now = Date()
+        draft.startedAt = now
+        if !draft.hasEndedAt {
+            draft.endedAt = now
+        }
+    }
+
+    private func setStartToTodayKeepingTime() {
+        let calendar = Calendar.current
+        let currentTime = calendar.dateComponents([.hour, .minute], from: draft.startedAt)
+        var today = calendar.dateComponents([.year, .month, .day], from: Date())
+        today.hour = currentTime.hour
+        today.minute = currentTime.minute
+        if let newDate = calendar.date(from: today) {
+            setStart(newDate)
+        }
+    }
+
+    private func adjustStart(_ component: Calendar.Component, by value: Int) {
+        guard let newDate = Calendar.current.date(byAdding: component, value: value, to: draft.startedAt) else {
+            return
+        }
+        setStart(newDate)
+    }
+
+    private func setStart(_ date: Date) {
+        draft.startedAt = date
+        if !draft.hasEndedAt {
+            draft.endedAt = date
+        } else if let endedAt = draft.endedAt, endedAt < draft.startedAt {
+            draft.endedAt = draft.startedAt
         }
     }
 
