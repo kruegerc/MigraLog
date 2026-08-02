@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="MigraLog">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>MigraLog</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">MigraLog Web</p>
+        <h1>Kopfschmerztagebuch</h1>
+      </div>
+      <button id="addEntryTop" class="icon-button primary" type="button" aria-label="Eintrag hinzufügen">+</button>
+    </header>
+
+    <main class="content">
+      <section id="view-diary" class="view active" aria-labelledby="diary-title">
+        <h2 id="diary-title">Tagebuch</h2>
+        <div id="entryList" class="stack"></div>
+      </section>
+
+      <section id="view-history" class="view" aria-labelledby="history-title">
+        <h2 id="history-title">Verlauf</h2>
+        <div id="historyList" class="stack"></div>
+      </section>
+
+      <section id="view-stats" class="view" aria-labelledby="stats-title">
+        <h2 id="stats-title">Statistik</h2>
+        <div class="panel">
+          <label class="field-label" for="statsPeriod">Zeitraum</label>
+          <select id="statsPeriod" class="input">
+            <option value="all">Alle</option>
+            <option value="7">7 Tage</option>
+            <option value="30">30 Tage</option>
+            <option value="90">90 Tage</option>
+            <option value="year">Dieses Jahr</option>
+            <option value="custom">Eigener Zeitraum</option>
+          </select>
+          <div id="statsCustomRange" class="grid two hidden">
+            <label>Von<input id="statsStart" class="input" type="date"></label>
+            <label>Bis<input id="statsEnd" class="input" type="date"></label>
+          </div>
+        </div>
+        <div id="statsCards" class="stats-grid"></div>
+      </section>
+
+      <section id="view-export" class="view" aria-labelledby="export-title">
+        <h2 id="export-title">Export</h2>
+        <div class="panel">
+          <label class="field-label" for="exportPeriod">Zeitraum</label>
+          <select id="exportPeriod" class="input">
+            <option value="all">Alle</option>
+            <option value="7">7 Tage</option>
+            <option value="30">30 Tage</option>
+            <option value="90">90 Tage</option>
+            <option value="year">Dieses Jahr</option>
+            <option value="custom">Eigener Zeitraum</option>
+          </select>
+          <div id="exportCustomRange" class="grid two hidden">
+            <label>Von<input id="exportStart" class="input" type="date"></label>
+            <label>Bis<input id="exportEnd" class="input" type="date"></label>
+          </div>
+          <p id="exportCount" class="muted"></p>
+          <div class="action-grid">
+            <button id="printReport" class="button primary" type="button">PDF-Bericht</button>
+            <button id="downloadCsv" class="button" type="button">CSV</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-settings" class="view" aria-labelledby="settings-title">
+        <h2 id="settings-title">Einstellungen</h2>
+        <div class="panel stack small">
+          <p><strong>Speicherung:</strong> Lokal im Browser dieses Geräts.</p>
+          <p><strong>Version:</strong> Web 1.0</p>
+          <p class="muted">MigraLog ersetzt keine medizinische Diagnose oder Behandlung.</p>
+        </div>
+        <div class="panel stack small">
+          <button id="downloadBackup" class="button" type="button">Backup-Datei speichern</button>
+          <label class="button file-button">Backup importieren<input id="importBackup" type="file" accept="application/json"></label>
+          <button id="deleteAll" class="button danger" type="button">Alle Daten löschen</button>
+        </div>
+        <div class="panel stack small">
+          <h3>Installation auf dem iPhone</h3>
+          <p>In Safari öffnen, Teilen-Menü wählen und „Zum Home-Bildschirm“ hinzufügen.</p>
+        </div>
+      </section>
+    </main>
+
+    <nav class="tabbar" aria-label="Hauptnavigation">
+      <button class="tab active" data-view="diary" type="button">Tagebuch</button>
+      <button class="tab" data-view="history" type="button">Verlauf</button>
+      <button class="tab" data-view="stats" type="button">Statistik</button>
+      <button class="tab" data-view="export" type="button">Export</button>
+      <button class="tab" data-view="settings" type="button">Mehr</button>
+    </nav>
+  </div>
+
+  <dialog id="entryDialog" class="entry-dialog">
+    <form id="entryForm" method="dialog" class="editor">
+      <div class="editor-header">
+        <button id="cancelEntry" class="button ghost" value="cancel" type="button">Abbrechen</button>
+        <h2 id="editorTitle">Eintrag</h2>
+        <button id="saveEntry" class="button primary compact" value="default" type="submit">Speichern</button>
+      </div>
+
+      <div class="segmented" role="tablist" aria-label="Eingabebereiche">
+        <button class="segment active" data-editor-tab="basic" type="button">Basis</button>
+        <button class="segment" data-editor-tab="details" type="button">Details</button>
+      </div>
+
+      <section id="editor-basic" class="editor-page active">
+        <label class="field-label">Intensität</label>
+        <div id="intensityPicker" class="intensity-grid"></div>
+
+        <label class="field-label">Schmerzart</label>
+        <div id="painTypePicker" class="choice-grid"></div>
+
+        <div class="grid two">
+          <label>Beginn Datum<input id="startedDate" class="input" type="date" required></label>
+          <label>Beginn Uhrzeit<input id="startedTime" class="input" type="time" required></label>
+        </div>
+
+        <label class="toggle-row"><input id="hasEnded" type="checkbox"> Ende erfassen</label>
+        <div id="endedFields" class="grid two hidden">
+          <label>Ende Datum<input id="endedDate" class="input" type="date"></label>
+          <label>Ende Uhrzeit<input id="endedTime" class="input" type="time"></label>
+        </div>
+      </section>
+
+      <section id="editor-details" class="editor-page">
+        <label class="field-label">Lokalisation</label>
+        <div id="locationPicker" class="choice-grid"></div>
+
+        <label class="field-label">Symptome</label>
+        <div id="symptomPicker" class="choice-grid"></div>
+
+        <label class="field-label">Auslöser</label>
+        <div id="triggerPicker" class="choice-grid"></div>
+
+        <label>Medikamente<textarea id="medications" class="input textarea" rows="2"></textarea></label>
+
+        <label class="field-label" for="medicationEffect">Wirkung</label>
+        <select id="medicationEffect" class="input">
+          <option value="notRecorded">Nicht erfasst</option>
+          <option value="none">Keine Wirkung</option>
+          <option value="slight">Leichte Wirkung</option>
+          <option value="good">Gute Wirkung</option>
+          <option value="complete">Beschwerdefrei</option>
+        </select>
+
+        <label>Notiz<textarea id="notes" class="input textarea" rows="4"></textarea></label>
+      </section>
+    </form>
+  </dialog>
+
+  <template id="emptyTemplate">
+    <div class="empty-state">
+      <strong>Noch keine Einträge</strong>
+      <p>Lege die erste Kopfschmerzepisode an.</p>
+      <button class="button primary add-entry-inline" type="button">Eintrag hinzufügen</button>
+    </div>
+  </template>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
