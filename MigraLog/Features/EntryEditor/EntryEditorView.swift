@@ -76,7 +76,7 @@ struct EntryEditorView: View {
             Section {
                 intensityPicker
             } header: {
-                Text("Intensitaet")
+                Text("Intensität")
             }
 
             Section("Schmerzart") {
@@ -92,7 +92,7 @@ struct EntryEditorView: View {
     private var detailsContent: some View {
         Group {
             optionSection("Symptome", options: HeadacheOptions.symptoms, selection: $draft.symptoms)
-            optionSection("Ausloeser", options: HeadacheOptions.triggers, selection: $draft.triggers)
+            optionSection("Auslöser", options: HeadacheOptions.triggers, selection: $draft.triggers)
             optionSection("Lokalisation", options: HeadacheOptions.locations, selection: $draft.locations)
 
             Section("Medikamente") {
@@ -146,7 +146,7 @@ struct EntryEditorView: View {
                         )
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Intensitaet \(value) von 10")
+                    .accessibilityLabel("Intensität \(value) von 10")
                 }
             }
         }
