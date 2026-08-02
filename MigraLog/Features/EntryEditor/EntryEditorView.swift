@@ -31,7 +31,9 @@ struct EntryEditorView: View {
                     Text("Intensitaet")
                 }
 
-                optionSection("Schmerzart", options: HeadacheOptions.painTypes, selection: $draft.painTypes)
+                Section("Schmerzart") {
+                    painTypePicker
+                }
 
                 Section("Beginn") {
                     Button {
@@ -90,7 +92,7 @@ struct EntryEditorView: View {
     }
 
     private var intensityPicker: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .center) {
                 Text("\(draft.intensity)/10")
                     .font(.title3.weight(.semibold))
@@ -103,13 +105,13 @@ struct EntryEditorView: View {
                     Button {
                         draft.intensity = value
                     } label: {
-                        VStack(spacing: 4) {
+                        VStack(spacing: 3) {
                             Image(systemName: intensityIcon(value))
-                                .font(.title3.weight(.semibold))
+                                .font(.headline.weight(.semibold))
                             Text("\(value)")
                                 .font(.headline)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 58)
+                        .frame(maxWidth: .infinity, minHeight: 48)
                         .foregroundColor(draft.intensity == value ? Color.white : intensityColor(value))
                         .background(
                             RoundedRectangle(cornerRadius: 8)
@@ -125,8 +127,40 @@ struct EntryEditorView: View {
                 }
             }
         }
-        .padding(.vertical, 6)
-        .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
+        .padding(.vertical, 4)
+        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+    }
+
+    private var painTypePicker: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 2), spacing: 8) {
+            ForEach(Array(HeadacheOptions.painTypes.enumerated()), id: \.offset) { _, option in
+                let isSelected = draft.painTypes.contains(option)
+                Button {
+                    toggle(option, in: $draft.painTypes)
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                            .font(.headline.weight(.semibold))
+                        Text(option)
+                            .font(.subheadline.weight(.semibold))
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.78)
+                        Spacer(minLength: 0)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 46, alignment: .leading)
+                    .padding(.horizontal, 10)
+                    .foregroundColor(isSelected ? Color.white : Color.primary)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(isSelected ? Color.accentColor : Color(.tertiarySystemGroupedBackground))
+                    )
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.vertical, 4)
+        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
     }
 
     private var saveBar: some View {
