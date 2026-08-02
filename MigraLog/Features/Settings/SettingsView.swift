@@ -2,30 +2,91 @@ import SwiftData
 import SwiftUI
 import UIKit
 
+private enum ExportPeriod: String, CaseIterable, Identifiable {
+    case all = "Alle"
+    case sevenDays = "7 Tage"
+    case thirtyDays = "30 Tage"
+    case ninetyDays = "90 Tage"
+    case thisYear = "Dieses Jahr"
+    case custom = "Eigener Zeitraum"
+
+    var id: String { rawValue }
+
+    func range(customStart: Date, customEnd: Date, calendar: Calendar = .current) -> ClosedRange<Date>? {
+        let now = Date()
+        switch self {
+        case .all:
+            return nil
+        case .sevenDays:
+            return rangeFrom(days: 7, now: now, calendar: calendar)
+        case .thirtyDays:
+            return rangeFrom(days: 30, now: now, calendar: calendar)
+        case .ninetyDays:
+            return rangeFrom(days: 90, now: now, calendar: calendar)
+        case .thisYear:
+            let start = calendar.date(from: calendar.dateComponents([.year], from: now)) ?? now
+            return start...now
+        case .custom:
+            let start = calendar.startOfDay(for: customStart)
+            let end = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: customEnd) ?? customEnd
+            return min(start, end)...max(start, end)
+        }
+    }
+
+    private func rangeFrom(days: Int, now: Date, calendar: Calendar) -> ClosedRange<Date> {
+        let start = calendar.date(byAdding: .day, value: -(days - 1), to: calendar.startOfDay(for: now)) ?? now
+        return start...now
+    }
+}
+
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var entries: [HeadacheEntry]
     @State private var showsDeleteConfirmation = false
     @State private var exportURL: URL?
     @State private var exportError: String?
+    @State private var exportPeriod: ExportPeriod = .all
+    @State private var customExportStart = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+    @State private var customExportEnd = Date()
+
+    private var exportEntries: [HeadacheEntry] {
+        let sortedEntries = entries.sorted { $0.startedAt < $1.startedAt }
+        guard let range = exportPeriod.range(customStart: customExportStart, customEnd: customExportEnd) else {
+            return sortedEntries
+        }
+        return sortedEntries.filter { range.contains($0.startedAt) }
+    }
 
     var body: some View {
         NavigationStack {
             List {
                 Section("Export") {
+                    Picker("Zeitraum", selection: $exportPeriod) {
+                        ForEach(ExportPeriod.allCases) { period in
+                            Text(period.rawValue).tag(period)
+                        }
+                    }
+
+                    if exportPeriod == .custom {
+                        DatePicker("Von", selection: $customExportStart, displayedComponents: .date)
+                        DatePicker("Bis", selection: $customExportEnd, displayedComponents: .date)
+                    }
+
+                    LabeledContent("Einträge im Export", value: "\(exportEntries.count)")
+
                     Button {
                         createPDFExport()
                     } label: {
                         Label("PDF für Arzttermin erstellen", systemImage: "doc.richtext")
                     }
-                    .disabled(entries.isEmpty)
+                    .disabled(exportEntries.isEmpty)
 
                     Button {
                         createCSVExport()
                     } label: {
                         Label("CSV-Rohdaten erstellen", systemImage: "tablecells")
                     }
-                    .disabled(entries.isEmpty)
+                    .disabled(exportEntries.isEmpty)
 
                     if let exportURL {
                         ShareLink(item: exportURL) {
@@ -35,6 +96,9 @@ struct SettingsView: View {
 
                     if entries.isEmpty {
                         Text("Der Export ist verfügbar, sobald mindestens ein Eintrag vorhanden ist.")
+                            .foregroundStyle(.secondary)
+                    } else if exportEntries.isEmpty {
+                        Text("Keine Einträge im gewählten Zeitraum.")
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -90,10 +154,16 @@ struct SettingsView: View {
         )
     }
 
+    private var exportPeriodLabel: String {
+        if let range = exportPeriod.range(customStart: customExportStart, customEnd: customExportEnd) {
+            return "\(MigraFormat.date.string(from: range.lowerBound)) - \(MigraFormat.date.string(from: range.upperBound))"
+        }
+        return "Alle Einträge"
+    }
+
     private func createPDFExport() {
         do {
-            let sortedEntries = entries.sorted { $0.startedAt < $1.startedAt }
-            let data = makePDF(entries: sortedEntries)
+            let data = makePDF(entries: exportEntries, periodLabel: exportPeriodLabel)
             let fileName = "MigraLog-Arztbericht-\(Self.fileDateFormatter.string(from: Date())).pdf"
             let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
             try data.write(to: fileURL, options: .atomic)
@@ -107,7 +177,7 @@ struct SettingsView: View {
 
     private func createCSVExport() {
         do {
-            let csv = makeCSV(entries: entries.sorted { $0.startedAt < $1.startedAt })
+            let csv = makeCSV(entries: exportEntries, periodLabel: exportPeriodLabel)
             let fileName = "MigraLog-Rohdaten-\(Self.fileDateFormatter.string(from: Date())).csv"
             let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
             try csv.write(to: fileURL, atomically: true, encoding: .utf8)
@@ -119,7 +189,7 @@ struct SettingsView: View {
         }
     }
 
-    private func makePDF(entries: [HeadacheEntry]) -> Data {
+    private func makePDF(entries: [HeadacheEntry], periodLabel: String) -> Data {
         let landscapeRect = CGRect(x: 0, y: 0, width: 842, height: 595)
         let portraitRect = CGRect(x: 0, y: 0, width: 595, height: 842)
         let margin: CGFloat = 28
@@ -201,18 +271,18 @@ struct SettingsView: View {
                 drawText("MigraLog Arztbericht", in: CGRect(x: margin, y: y, width: tableWidth, height: 24), font: titleFont)
                 y += 27
                 drawText(
-                    "Erstellt am \(MigraFormat.dateTime.string(from: Date())) | Einträge: \(entries.count) | Ø Intensität: \(averageIntensity(entries)) | Ø Dauer: \(averageDuration(entries))",
-                    in: CGRect(x: margin, y: y, width: tableWidth, height: 18),
+                    "Zeitraum: \(periodLabel) | Erstellt am \(MigraFormat.dateTime.string(from: Date())) | Einträge: \(entries.count) | Ø Intensität: \(averageIntensity(entries)) | Ø Dauer: \(averageDuration(entries))",
+                    in: CGRect(x: margin, y: y, width: tableWidth, height: 30),
                     font: summaryFont,
                     color: .secondaryLabel
                 )
-                y += 25
+                y += 34
                 drawText(
                     "Teil 1 zeigt eine kompakte Übersicht. Vollständige Detailangaben stehen im Anhang ab Seite 2.",
-                    in: CGRect(x: margin, y: y, width: tableWidth, height: 30),
+                    in: CGRect(x: margin, y: y, width: tableWidth, height: 28),
                     font: summaryFont
                 )
-                y += 37
+                y += 35
                 drawSummaryTableHeader()
             }
 
@@ -288,6 +358,8 @@ struct SettingsView: View {
             y = margin
             drawText("Detailanhang", in: CGRect(x: margin, y: y, width: portraitRect.width - (2 * margin), height: 28), font: titleFont)
             y += 34
+            drawText("Zeitraum: \(periodLabel)", in: CGRect(x: margin, y: y, width: portraitRect.width - (2 * margin), height: 20), font: summaryFont, color: .secondaryLabel)
+            y += 26
             for (index, entry) in entries.enumerated() {
                 drawDetailEntry(entry, index: index + 1)
             }
@@ -309,9 +381,10 @@ struct SettingsView: View {
         ]
     }
 
-    private func makeCSV(entries: [HeadacheEntry]) -> String {
+    private func makeCSV(entries: [HeadacheEntry], periodLabel: String) -> String {
         var rows: [[String]] = [
             ["MigraLog Export"],
+            ["Zeitraum", periodLabel],
             ["Erstellt am", MigraFormat.dateTime.string(from: Date())],
             ["Anzahl Einträge", "\(entries.count)"],
             [],
