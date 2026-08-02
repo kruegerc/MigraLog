@@ -24,20 +24,20 @@ struct EntryEditorView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 18) {
                     quickTimeControls
                     intensityPicker
-                    chipSection("Schmerzart", options: HeadacheOptions.painTypes, selection: $draft.painTypes)
-                    chipSection("Symptome", options: HeadacheOptions.symptoms, selection: $draft.symptoms)
-                    chipSection("Ausloeser", options: HeadacheOptions.triggers, selection: $draft.triggers)
-                    chipSection("Lokalisation", options: HeadacheOptions.locations, selection: $draft.locations)
+                    optionSection("Schmerzart", options: HeadacheOptions.painTypes, selection: $draft.painTypes)
+                    optionSection("Symptome", options: HeadacheOptions.symptoms, selection: $draft.symptoms)
+                    optionSection("Ausloeser", options: HeadacheOptions.triggers, selection: $draft.triggers)
+                    optionSection("Lokalisation", options: HeadacheOptions.locations, selection: $draft.locations)
                     medicationControls
                     notesControl
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 14)
-                .padding(.bottom, 110)
+                .padding(.bottom, 120)
             }
             .background(Color(.systemGroupedBackground))
             .scrollDismissesKeyboard(.interactively)
@@ -177,28 +177,26 @@ struct EntryEditorView: View {
         .background(.bar)
     }
 
-    private func chipSection(_ title: String, options: [String], selection: Binding<[String]>) -> some View {
+    private func optionSection(_ title: String, options: [String], selection: Binding<[String]>) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(.headline)
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 132), spacing: 8)], alignment: .leading, spacing: 8) {
+            VStack(spacing: 8) {
                 ForEach(Array(options.enumerated()), id: \.offset) { _, option in
                     let isSelected = selection.wrappedValue.contains(option)
                     Button {
                         toggle(option, in: selection)
                     } label: {
-                        HStack(spacing: 6) {
-                            if isSelected {
-                                Image(systemName: "checkmark.circle.fill")
-                            }
+                        HStack(spacing: 10) {
+                            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                                .font(.title3.weight(.semibold))
                             Text(option)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.82)
+                                .font(.headline)
+                            Spacer()
                         }
-                        .font(.subheadline.weight(.semibold))
-                        .frame(maxWidth: .infinity, minHeight: 46)
-                        .padding(.horizontal, 10)
+                        .frame(maxWidth: .infinity, minHeight: 50)
+                        .padding(.horizontal, 14)
                         .foregroundColor(isSelected ? Color.white : Color.primary)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
