@@ -9,6 +9,12 @@ MigraLog ist ein digitales Kopfschmerztagebuch. Das Repository enthält zwei Var
 
 Die Web-App liegt im Ordner `web` und ist für den dauerhaften privaten Einsatz ohne Apple-Developer-Kosten vorgesehen.
 
+Nach aktivierter GitHub-Pages-Bereitstellung ist sie hier erreichbar:
+
+```text
+https://kruegerc.github.io/MigraLog/
+```
+
 - läuft im Browser
 - kann auf dem iPhone zum Home-Bildschirm hinzugefügt werden
 - speichert Daten lokal im Browser
