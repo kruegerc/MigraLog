@@ -11,9 +11,11 @@ MigraLog ist ein digitales Kopfschmerztagebuch für iPhone und iPad.
 - Schmerzart mit Auswahl für `Einseitig links` und `Einseitig rechts`
 - Datum, Beginn, optionales Ende, Lokalisation, Symptome, Auslöser, Medikamente, Wirkung und Notizen
 - chronologische Übersicht
-- einfache Kennzahlen zu Anzahl, durchschnittlicher Intensität und Dauer
-- PDF-Bericht für Arzttermine
-- CSV-Rohdatenexport für Tabellenprogramme
+- Statistik mit Zeitraumfilter für `Alle`, `7 Tage`, `30 Tage`, `90 Tage`, `Dieses Jahr` und `Eigener Zeitraum`
+- einfache Kennzahlen zu Anzahl, Kopfschmerztagen, durchschnittlicher Intensität und Dauer
+- häufigste Symptome, Auslöser und Schmerzarten im gewählten Zeitraum
+- PDF-Bericht für Arzttermine mit auswählbarem Zeitraum
+- CSV-Rohdatenexport für Tabellenprogramme mit auswählbarem Zeitraum
 - Einstellungsseite mit Datenschutz- und Medizin-Hinweis
 
 ## Technische Basis
