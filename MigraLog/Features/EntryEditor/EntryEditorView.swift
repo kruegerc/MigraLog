@@ -98,13 +98,10 @@ struct EntryEditorView: View {
             Section("Medikamente") {
                 TextField("Medikament oder Dosis", text: $draft.medications, axis: .vertical)
                     .lineLimit(1...3)
+            }
 
-                Picker("Wirkung", selection: $draft.medicationEffect) {
-                    ForEach(MedicationEffect.allCases) { effect in
-                        Text(effect.title).tag(effect)
-                    }
-                }
-                .pickerStyle(.segmented)
+            Section("Wirkung") {
+                medicationEffectPicker
             }
 
             Section("Notiz") {
@@ -241,6 +238,32 @@ struct EntryEditorView: View {
                         .frame(height: 120)
                         .clipped()
                 }
+            }
+        }
+        .padding(.vertical, 4)
+        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+    }
+
+    private var medicationEffectPicker: some View {
+        VStack(spacing: 8) {
+            ForEach(MedicationEffect.allCases) { effect in
+                let isSelected = draft.medicationEffect == effect
+                Button {
+                    draft.medicationEffect = effect
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                            .font(.title3.weight(.semibold))
+                            .foregroundColor(isSelected ? Color.accentColor : Color.secondary)
+                        Text(effect.title)
+                            .font(.headline)
+                            .foregroundColor(Color.primary)
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
         }
         .padding(.vertical, 4)
