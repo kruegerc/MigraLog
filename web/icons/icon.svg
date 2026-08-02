@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="MigraLog">
+  <rect width="1024" height="1024" rx="220" fill="#0f766e"/>
+  <path d="M514 188c-118 0-214 96-214 214 0 42 12 81 33 114l-68 164c-9 21 12 42 33 33l164-68c33 21 72 33 114 33 118 0 214-96 214-214S632 188 514 188Z" fill="#ecfeff" opacity=".95"/>
+  <path d="M385 447c18-73 70-121 137-121 54 0 93 27 122 72" fill="none" stroke="#0f766e" stroke-width="54" stroke-linecap="round"/>
+  <path d="M373 542h278" stroke="#0f766e" stroke-width="54" stroke-linecap="round"/>
+  <circle cx="362" cy="722" r="54" fill="#f97316"/>
+  <circle cx="512" cy="754" r="54" fill="#dc2626"/>
+  <circle cx="662" cy="722" r="54" fill="#7e22ce"/>
+</svg>

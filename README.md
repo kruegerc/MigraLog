@@ -1,8 +1,28 @@
 # MigraLog
 
-MigraLog ist ein digitales Kopfschmerztagebuch für iPhone und iPad.
+MigraLog ist ein digitales Kopfschmerztagebuch. Das Repository enthält zwei Varianten:
 
-## MVP-Umfang
+- native iOS-/iPadOS-App mit SwiftUI und SwiftData
+- Web-App/PWA für Smartphone und Desktop ohne App-Store-Verteilung
+
+## MigraLog Web 1.0
+
+Die Web-App liegt im Ordner `web` und ist für den dauerhaften privaten Einsatz ohne Apple-Developer-Kosten vorgesehen.
+
+- läuft im Browser
+- kann auf dem iPhone zum Home-Bildschirm hinzugefügt werden
+- speichert Daten lokal im Browser
+- funktioniert nach dem ersten Laden offline
+- bietet Tagebuch, Verlauf, Statistik, Export und Backup
+- benötigt kein Benutzerkonto und kein Backend für Gesundheitsdaten
+
+Dokumentation: [MigraLog Web 1.0](docs/WEB_APP.md)
+
+## Native iOS-Version
+
+Die native App ist als iPhone-/iPad-App vorbereitet und kann lokal über Xcode installiert werden.
+
+### MVP-Umfang
 
 - lokale Speicherung mit SwiftData
 - Kopfschmerzepisode anlegen, anzeigen, bearbeiten und löschen
@@ -19,7 +39,7 @@ MigraLog ist ein digitales Kopfschmerztagebuch für iPhone und iPad.
 - CSV-Rohdatenexport für Tabellenprogramme mit auswählbarem Zeitraum
 - Einstellungsseite mit Datenschutz- und Medizin-Hinweis
 
-## Version 1.0 Patiententest
+### Version 1.0 Patiententest
 
 Für den ersten Test auf einem echten iPhone gelten diese Dokumente:
 
@@ -27,7 +47,7 @@ Für den ersten Test auf einem echten iPhone gelten diese Dokumente:
 - [Patiententest 1.0](docs/PATIENT_TEST_1_0.md)
 - [Release-Checkliste 1.0](docs/RELEASE_1_0_CHECKLIST.md)
 
-## Technische Basis
+### Technische Basis
 
 - SwiftUI
 - SwiftData
@@ -35,7 +55,7 @@ Für den ersten Test auf einem echten iPhone gelten diese Dokumente:
 - Mindestversion: iOS 17.0 / iPadOS 17.0
 - Unit-Test-Target und UI-Test-Target
 
-## Build
+### Build
 
 Projekt in Xcode öffnen:
 
@@ -49,6 +69,6 @@ Danach das Scheme `MigraLog` auswählen und auf einem iPhone- oder iPad-Simulato
 
 Die erste Version speichert Daten ausschließlich lokal auf dem Gerät. Es gibt kein Benutzerkonto, keine Werbung, keine Analyse-SDKs und keine automatische Weitergabe sensibler Gesundheitsdaten.
 
-PDF- und CSV-Exporte werden nur lokal erzeugt und erst über den Teilen-Dialog weitergegeben, wenn der Nutzer dies bewusst auslöst.
+PDF- und CSV-Exporte werden nur lokal erzeugt und erst über den Teilen-Dialog beziehungsweise den Browser-Download weitergegeben, wenn der Nutzer dies bewusst auslöst.
 
 MigraLog ersetzt keine medizinische Diagnose oder Behandlung. Bei starken, neuen oder ungewöhnlichen Beschwerden sollte medizinischer Rat eingeholt werden.

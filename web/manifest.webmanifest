@@ -1,0 +1,20 @@
+{
+  "name": "MigraLog",
+  "short_name": "MigraLog",
+  "description": "Digitales Kopfschmerztagebuch als lokale Web-App.",
+  "lang": "de",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f7f4",
+  "theme_color": "#0f766e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
