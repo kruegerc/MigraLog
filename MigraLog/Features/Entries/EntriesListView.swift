@@ -5,6 +5,7 @@ struct EntriesListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \HeadacheEntry.startedAt, order: .reverse) private var entries: [HeadacheEntry]
     @State private var isAddingEntry = false
+    @State private var entryToEdit: HeadacheEntry?
 
     var body: some View {
         NavigationStack {
@@ -18,11 +19,12 @@ struct EntriesListView: View {
                 } else {
                     List {
                         ForEach(entries) { entry in
-                            NavigationLink {
-                                EntryDetailView(entry: entry)
+                            Button {
+                                entryToEdit = entry
                             } label: {
                                 EntryRowView(entry: entry)
                             }
+                            .buttonStyle(.plain)
                         }
                         .onDelete(perform: deleteEntries)
                     }
@@ -34,6 +36,9 @@ struct EntriesListView: View {
             }
             .fullScreenCover(isPresented: $isAddingEntry) {
                 EntryEditorView(mode: .new)
+            }
+            .fullScreenCover(item: $entryToEdit) { entry in
+                EntryEditorView(mode: .edit(entry))
             }
         }
     }
