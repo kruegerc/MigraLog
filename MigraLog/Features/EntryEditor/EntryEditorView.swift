@@ -36,23 +36,7 @@ struct EntryEditorView: View {
                 }
 
                 Section("Beginn") {
-                    Button {
-                        let now = Date()
-                        draft.startedAt = now
-                        if !draft.hasEndedAt {
-                            draft.endedAt = now
-                        }
-                    } label: {
-                        Label("Jetzt setzen", systemImage: "clock")
-                    }
-
-                    DatePicker("Beginn", selection: $draft.startedAt)
-
-                    Toggle("Ende erfassen", isOn: $draft.hasEndedAt)
-
-                    if draft.hasEndedAt {
-                        DatePicker("Ende", selection: $draft.endedAt, in: draft.startedAt...)
-                    }
+                    startDateControls
                 }
 
                 optionSection("Symptome", options: HeadacheOptions.symptoms, selection: $draft.symptoms)
@@ -157,6 +141,40 @@ struct EntryEditorView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+            }
+        }
+        .padding(.vertical, 4)
+        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+    }
+
+    private var startDateControls: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Button {
+                let now = Date()
+                draft.startedAt = now
+                if !draft.hasEndedAt {
+                    draft.endedAt = now
+                }
+            } label: {
+                Label("Jetzt setzen", systemImage: "clock")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.bordered)
+
+            DatePicker("Datum", selection: $draft.startedAt, displayedComponents: .date)
+                .datePickerStyle(.graphical)
+
+            DatePicker("Uhrzeit", selection: $draft.startedAt, displayedComponents: .hourAndMinute)
+                .datePickerStyle(.wheel)
+                .frame(height: 110)
+                .clipped()
+
+            Toggle("Ende erfassen", isOn: $draft.hasEndedAt)
+
+            if draft.hasEndedAt {
+                DatePicker("Ende", selection: $draft.endedAt, in: draft.startedAt...)
+                    .datePickerStyle(.compact)
             }
         }
         .padding(.vertical, 4)
