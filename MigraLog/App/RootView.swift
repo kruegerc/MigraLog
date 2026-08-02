@@ -8,6 +8,11 @@ struct RootView: View {
                     Label("Tagebuch", systemImage: "list.bullet")
                 }
 
+            HistoryView()
+                .tabItem {
+                    Label("Verlauf", systemImage: "calendar")
+                }
+
             StatisticsView()
                 .tabItem {
                     Label("Statistik", systemImage: "chart.bar")
