@@ -24,24 +24,57 @@ struct EntryEditorView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView(.vertical, showsIndicators: true) {
-                VStack(alignment: .leading, spacing: 18) {
-                    quickTimeControls
-                    intensityPicker
-                    optionSection("Schmerzart", options: HeadacheOptions.painTypes, selection: $draft.painTypes)
-                    optionSection("Symptome", options: HeadacheOptions.symptoms, selection: $draft.symptoms)
-                    optionSection("Ausloeser", options: HeadacheOptions.triggers, selection: $draft.triggers)
-                    optionSection("Lokalisation", options: HeadacheOptions.locations, selection: $draft.locations)
-                    medicationControls
-                    notesControl
+            Form {
+                Section("Beginn") {
+                    Button {
+                        let now = Date()
+                        draft.startedAt = now
+                        if !draft.hasEndedAt {
+                            draft.endedAt = now
+                        }
+                    } label: {
+                        Label("Jetzt setzen", systemImage: "clock")
+                    }
+
+                    DatePicker("Beginn", selection: $draft.startedAt)
+
+                    Toggle("Ende erfassen", isOn: $draft.hasEndedAt)
+
+                    if draft.hasEndedAt {
+                        DatePicker("Ende", selection: $draft.endedAt, in: draft.startedAt...)
+                    }
                 }
-                .padding(.horizontal, 18)
-                .padding(.top, 14)
-                .padding(.bottom, 120)
+
+                Section {
+                    intensityPicker
+                } header: {
+                    Text("Intensitaet")
+                }
+
+                optionSection("Schmerzart", options: HeadacheOptions.painTypes, selection: $draft.painTypes)
+                optionSection("Symptome", options: HeadacheOptions.symptoms, selection: $draft.symptoms)
+                optionSection("Ausloeser", options: HeadacheOptions.triggers, selection: $draft.triggers)
+                optionSection("Lokalisation", options: HeadacheOptions.locations, selection: $draft.locations)
+
+                Section("Medikamente") {
+                    TextField("Medikament oder Dosis", text: $draft.medications, axis: .vertical)
+                        .lineLimit(1...3)
+
+                    Picker("Wirkung", selection: $draft.medicationEffect) {
+                        ForEach(MedicationEffect.allCases) { effect in
+                            Text(effect.title).tag(effect)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                Section("Notiz") {
+                    TextField("Was ist wichtig?", text: $draft.notes, axis: .vertical)
+                        .lineLimit(4...8)
+                }
             }
-            .background(Color(.systemGroupedBackground))
-            .scrollDismissesKeyboard(.interactively)
             .navigationTitle(navigationTitle)
+            .scrollDismissesKeyboard(.interactively)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Abbrechen") {
@@ -55,45 +88,13 @@ struct EntryEditorView: View {
         }
     }
 
-    private var quickTimeControls: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .firstTextBaseline) {
-                Text("Beginn")
-                    .font(.headline)
-                Spacer()
-                Button("Jetzt") {
-                    let now = Date()
-                    draft.startedAt = now
-                    if !draft.hasEndedAt {
-                        draft.endedAt = now
-                    }
-                }
-                .buttonStyle(.bordered)
-            }
-
-            DatePicker("Beginn", selection: $draft.startedAt)
-                .datePickerStyle(.compact)
-
-            Toggle("Ende erfassen", isOn: $draft.hasEndedAt)
-
-            if draft.hasEndedAt {
-                DatePicker("Ende", selection: $draft.endedAt, in: draft.startedAt...)
-                    .datePickerStyle(.compact)
-            }
-        }
-        .padding(16)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 8))
-    }
-
     private var intensityPicker: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .firstTextBaseline) {
-                Text("Intensitaet")
-                    .font(.headline)
-                Spacer()
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center) {
                 Text("\(draft.intensity)/10")
                     .font(.title3.weight(.semibold))
                     .foregroundColor(intensityColor(draft.intensity))
+                Spacer()
             }
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 6), spacing: 8) {
@@ -123,40 +124,8 @@ struct EntryEditorView: View {
                 }
             }
         }
-        .padding(16)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 8))
-    }
-
-    private var medicationControls: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Medikamente")
-                .font(.headline)
-
-            TextField("Medikament oder Dosis", text: $draft.medications, axis: .vertical)
-                .textFieldStyle(.roundedBorder)
-
-            Picker("Wirkung", selection: $draft.medicationEffect) {
-                ForEach(MedicationEffect.allCases) { effect in
-                    Text(effect.title).tag(effect)
-                }
-            }
-            .pickerStyle(.segmented)
-        }
-        .padding(16)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 8))
-    }
-
-    private var notesControl: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Notiz")
-                .font(.headline)
-
-            TextField("Was ist wichtig?", text: $draft.notes, axis: .vertical)
-                .lineLimit(4...8)
-                .textFieldStyle(.roundedBorder)
-        }
-        .padding(16)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 8))
+        .padding(.vertical, 6)
+        .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
     }
 
     private var saveBar: some View {
@@ -178,37 +147,29 @@ struct EntryEditorView: View {
     }
 
     private func optionSection(_ title: String, options: [String], selection: Binding<[String]>) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(title)
-                .font(.headline)
+        Section(title) {
+            ForEach(Array(options.enumerated()), id: \.offset) { _, option in
+                let isSelected = selection.wrappedValue.contains(option)
+                Button {
+                    toggle(option, in: selection)
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                            .font(.title3.weight(.semibold))
+                            .foregroundColor(isSelected ? Color.accentColor : Color.secondary)
 
-            VStack(spacing: 8) {
-                ForEach(Array(options.enumerated()), id: \.offset) { _, option in
-                    let isSelected = selection.wrappedValue.contains(option)
-                    Button {
-                        toggle(option, in: selection)
-                    } label: {
-                        HStack(spacing: 10) {
-                            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                                .font(.title3.weight(.semibold))
-                            Text(option)
-                                .font(.headline)
-                            Spacer()
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 50)
-                        .padding(.horizontal, 14)
-                        .foregroundColor(isSelected ? Color.white : Color.primary)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(isSelected ? Color.accentColor : Color(.tertiarySystemGroupedBackground))
-                        )
+                        Text(option)
+                            .font(.headline)
+                            .foregroundColor(Color.primary)
+
+                        Spacer()
                     }
-                    .buttonStyle(.plain)
+                    .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             }
         }
-        .padding(16)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 8))
     }
 
     private var navigationTitle: String {
