@@ -17,14 +17,14 @@ struct EntryDetailView: View {
             }
 
             Section("Schmerz") {
-                LabeledContent("Intensitaet", value: "\(entry.intensity)/10")
+                LabeledContent("Intensität", value: "\(entry.intensity)/10")
                 ValueList(label: "Art", values: entry.painTypes)
                 ValueList(label: "Lokalisation", values: entry.locations)
             }
 
             Section("Begleitfaktoren") {
                 ValueList(label: "Symptome", values: entry.symptoms)
-                ValueList(label: "Ausloeser", values: entry.triggers)
+                ValueList(label: "Auslöser", values: entry.triggers)
             }
 
             Section("Medikamente") {
@@ -46,7 +46,7 @@ struct EntryDetailView: View {
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Loeschen", role: .destructive) {
+                Button("Löschen", role: .destructive) {
                     showsDeleteConfirmation = true
                 }
             }
@@ -54,8 +54,8 @@ struct EntryDetailView: View {
         .sheet(isPresented: $isEditing) {
             EntryEditorView(mode: .edit(entry))
         }
-        .confirmationDialog("Eintrag loeschen?", isPresented: $showsDeleteConfirmation, titleVisibility: .visible) {
-            Button("Loeschen", role: .destructive) {
+        .confirmationDialog("Eintrag löschen?", isPresented: $showsDeleteConfirmation, titleVisibility: .visible) {
+            Button("Löschen", role: .destructive) {
                 modelContext.delete(entry)
                 dismiss()
             }
