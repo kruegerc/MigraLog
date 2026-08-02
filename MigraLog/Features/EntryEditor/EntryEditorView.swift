@@ -6,11 +6,19 @@ enum EntryEditorMode {
     case edit(HeadacheEntry)
 }
 
+private enum EntryEditorPage: String, CaseIterable, Identifiable {
+    case basis = "Basis"
+    case details = "Details"
+
+    var id: String { rawValue }
+}
+
 struct EntryEditorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     let mode: EntryEditorMode
     @State private var draft: EntryDraft
+    @State private var page: EntryEditorPage = .basis
 
     private static let timeFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -33,38 +41,19 @@ struct EntryEditorView: View {
         NavigationStack {
             Form {
                 Section {
-                    intensityPicker
-                } header: {
-                    Text("Intensitaet")
-                }
-
-                Section("Schmerzart") {
-                    painTypePicker
-                }
-
-                Section("Beginn") {
-                    startDateControls
-                }
-
-                optionSection("Symptome", options: HeadacheOptions.symptoms, selection: $draft.symptoms)
-                optionSection("Ausloeser", options: HeadacheOptions.triggers, selection: $draft.triggers)
-                optionSection("Lokalisation", options: HeadacheOptions.locations, selection: $draft.locations)
-
-                Section("Medikamente") {
-                    TextField("Medikament oder Dosis", text: $draft.medications, axis: .vertical)
-                        .lineLimit(1...3)
-
-                    Picker("Wirkung", selection: $draft.medicationEffect) {
-                        ForEach(MedicationEffect.allCases) { effect in
-                            Text(effect.title).tag(effect)
+                    Picker("Bereich", selection: $page) {
+                        ForEach(EntryEditorPage.allCases) { page in
+                            Text(page.rawValue).tag(page)
                         }
                     }
                     .pickerStyle(.segmented)
                 }
 
-                Section("Notiz") {
-                    TextField("Was ist wichtig?", text: $draft.notes, axis: .vertical)
-                        .lineLimit(4...8)
+                switch page {
+                case .basis:
+                    basisContent
+                case .details:
+                    detailsContent
                 }
             }
             .navigationTitle(navigationTitle)
@@ -78,6 +67,49 @@ struct EntryEditorView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 saveBar
+            }
+        }
+    }
+
+    private var basisContent: some View {
+        Group {
+            Section {
+                intensityPicker
+            } header: {
+                Text("Intensitaet")
+            }
+
+            Section("Schmerzart") {
+                painTypePicker
+            }
+
+            Section("Beginn") {
+                startDateControls
+            }
+        }
+    }
+
+    private var detailsContent: some View {
+        Group {
+            optionSection("Symptome", options: HeadacheOptions.symptoms, selection: $draft.symptoms)
+            optionSection("Ausloeser", options: HeadacheOptions.triggers, selection: $draft.triggers)
+            optionSection("Lokalisation", options: HeadacheOptions.locations, selection: $draft.locations)
+
+            Section("Medikamente") {
+                TextField("Medikament oder Dosis", text: $draft.medications, axis: .vertical)
+                    .lineLimit(1...3)
+
+                Picker("Wirkung", selection: $draft.medicationEffect) {
+                    ForEach(MedicationEffect.allCases) { effect in
+                        Text(effect.title).tag(effect)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+
+            Section("Notiz") {
+                TextField("Was ist wichtig?", text: $draft.notes, axis: .vertical)
+                    .lineLimit(4...8)
             }
         }
     }
