@@ -19,6 +19,14 @@ MigraLog ist ein digitales Kopfschmerztagebuch für iPhone und iPad.
 - CSV-Rohdatenexport für Tabellenprogramme mit auswählbarem Zeitraum
 - Einstellungsseite mit Datenschutz- und Medizin-Hinweis
 
+## Version 1.0 Patiententest
+
+Für den ersten Test auf einem echten iPhone gelten diese Dokumente:
+
+- [iPhone-Installation](docs/IPHONE_INSTALLATION.md)
+- [Patiententest 1.0](docs/PATIENT_TEST_1_0.md)
+- [Release-Checkliste 1.0](docs/RELEASE_1_0_CHECKLIST.md)
+
 ## Technische Basis
 
 - SwiftUI
