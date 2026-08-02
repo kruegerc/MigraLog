@@ -12,6 +12,13 @@ struct EntryEditorView: View {
     let mode: EntryEditorMode
     @State private var draft: EntryDraft
 
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .none
+        formatter.timeStyle = .short
+        return formatter
+    }()
+
     init(mode: EntryEditorMode) {
         self.mode = mode
         switch mode {
@@ -149,18 +156,30 @@ struct EntryEditorView: View {
 
     private var startDateControls: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Button {
-                let now = Date()
-                draft.startedAt = now
-                if !draft.hasEndedAt {
-                    draft.endedAt = now
+            HStack(spacing: 12) {
+                Button {
+                    let now = Date()
+                    draft.startedAt = now
+                    if !draft.hasEndedAt {
+                        draft.endedAt = now
+                    }
+                } label: {
+                    Label("Jetzt", systemImage: "clock")
+                        .font(.headline)
+                        .frame(minHeight: 42)
                 }
-            } label: {
-                Label("Jetzt setzen", systemImage: "clock")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, minHeight: 44)
+                .buttonStyle(.borderedProminent)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(MigraFormat.date.string(from: draft.startedAt))
+                        .font(.headline)
+                    Text(Self.timeFormatter.string(from: draft.startedAt))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 0)
             }
-            .buttonStyle(.bordered)
 
             DatePicker("Datum", selection: $draft.startedAt, displayedComponents: .date)
                 .datePickerStyle(.compact)
